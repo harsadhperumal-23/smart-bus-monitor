@@ -166,6 +166,7 @@ exports.getSeatsForBus = async (req, res) => {
 
 /**
  * Update bus snapshot (for IoT devices or simulator)
+ * Accepts: busId (required), passengerCount, seatStates, gpsLocation
  */
 exports.updateSnapshot = async (req, res) => {
     try {
@@ -178,36 +179,57 @@ exports.updateSnapshot = async (req, res) => {
             });
         }
 
-        const bus = await Bus.findOne({ busId });
+        let bus = await Bus.findOne({ busId });
 
+        // Create bus if it doesn't exist (for new IoT devices)
         if (!bus) {
-            return res.status(404).json({
-                success: false,
-                message: 'Bus not found'
+            console.log(`[SNAPSHOT] Creating new bus with ID: ${busId}`);
+            bus = new Bus({
+                busId: busId,
+                busNumber: busId,
+                route: 'Unknown',
+                capacity: 40,
+                passengerCount: passengerCount || 0
             });
+            await bus.save();
         }
 
         // Update fields
         const updateData = { lastUpdated: new Date() };
 
-        if (seatStates) updateData.seatStates = seatStates;
+        if (seatStates) {
+            updateData.seatStates = seatStates;
+        }
+        
         if (gpsLocation) {
             updateData.gpsLocation = gpsLocation;
             updateData.currentLocation = gpsLocation;
         }
-        if (passengerCount !== undefined) updateData.passengerCount = passengerCount;
+        
+        if (passengerCount !== undefined) {
+            // Validate passenger count
+            const count = Math.max(0, Math.min(passengerCount, 100));
+            updateData.passengerCount = count;
+            console.log(`[SNAPSHOT] Bus ${busId} passenger count: ${count}`);
+        }
 
-        await Bus.findOneAndUpdate({ busId }, updateData);
+        const updatedBus = await Bus.findOneAndUpdate({ busId }, updateData, { new: true });
 
         res.json({
             success: true,
-            message: 'Bus snapshot updated successfully'
+            message: 'Bus snapshot updated successfully',
+            data: {
+                busId: updatedBus.busId,
+                passengerCount: updatedBus.passengerCount,
+                lastUpdated: updatedBus.lastUpdated
+            }
         });
     } catch (error) {
         console.error('Error updating snapshot:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update snapshot'
+            message: 'Failed to update snapshot',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
