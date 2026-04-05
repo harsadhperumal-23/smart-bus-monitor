@@ -6,7 +6,7 @@ import LiveAlertFeed from '../components/LiveAlertFeed';
 import SeatGrid from '../components/SeatGrid';
 import useAlertNotifications from '../hooks/useAlertNotifications';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api`;
 
 const Operations = () => {
     const [selectedBus, setSelectedBus] = useState('BUS-001');
