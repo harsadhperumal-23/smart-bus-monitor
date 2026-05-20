@@ -7,23 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        glass: {
-          light: 'rgba(255, 255, 255, 0.1)',
-          dark: 'rgba(0, 0, 0, 0.2)',
+        app:     '#0A0A0A',
+        sidebar: '#0F172A',
+        surface: '#111827',
+        border: {
+          DEFAULT: '#1F2937',
+          strong:  '#374151',
         },
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'blink': 'blink 2s ease-in-out infinite',
-      },
-      keyframes: {
-        blink: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.3' },
+        brand: {
+          DEFAULT: '#6366F1', // Indigo
+          hover:   '#4F46E5', // Indigo-600
         },
+        success: '#22C55E', // Green
+        danger:  '#EF4444', // Red
       },
-      backdropBlur: {
-        xs: '2px',
+      fontFamily: {
+        sans: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
     },
   },

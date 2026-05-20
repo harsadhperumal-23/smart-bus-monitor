@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, AlertTriangle, Package, MapPin } from 'lucide-react';
+import { User, Package, MapPin, CircleDashed } from 'lucide-react';
 import Tooltip from './Tooltip';
 
 const SeatGrid = ({ seats = [], onSeatClick }) => {
@@ -13,47 +13,41 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
     const getSeatData = (seatNumber) => {
         return seats.find(s => s.number === seatNumber) || {
             number: seatNumber,
-            occupied: false,
-            passengerCount: 0,
-            hasLuggage: false,
+            state: "EMPTY",
             lastUpdated: new Date().toISOString()
         };
     };
 
-    const getSeatStatus = (seat) => {
-        if (seat.hasLuggage && seat.occupied) return 'alert';
-        if (seat.occupied) return 'occupied';
-        return 'vacant';
-    };
-
-    const getSeatColor = (status) => {
-        switch (status) {
-            case 'alert':
-                return 'bg-red-500/20 border-red-500 text-red-400 seat-alert';
-            case 'occupied':
-                return 'bg-emerald-500/20 border-emerald-500 text-emerald-400';
-            case 'vacant':
-                return 'bg-slate-500/10 border-slate-600 text-slate-400 seat-vacant';
+    const getSeatColor = (state, index) => {
+        const intensity = (index % 3) === 0 ? 'bg-opacity-30' : (index % 2) === 0 ? 'bg-opacity-20' : 'bg-opacity-40';
+        
+        switch (state) {
+            case 'LUGGAGE':
+                return 'bg-[#EF4444] border-[#EF4444] text-[#EF4444] bg-opacity-20';
+            case 'OCCUPIED':
+                return `bg-[#22C55E] border-[#22C55E] text-[#22C55E] ${intensity}`;
+            case 'EMPTY':
             default:
-                return 'bg-slate-500/10 border-slate-600 text-slate-400';
+                return 'bg-[#1F2937]/50 border-[#1F2937] text-gray-500 hover:bg-[#1F2937]';
         }
     };
 
-    const getSeatIcon = (status, seat) => {
-        if (status === 'alert') {
-            return <AlertTriangle className="w-4 h-4" />;
+    const getSeatIcon = (state) => {
+        if (state === 'LUGGAGE') {
+            return <Package className="w-5 h-5" />;
         }
-        if (status === 'occupied') {
-            return <User className="w-4 h-4" />;
+        if (state === 'OCCUPIED') {
+            return <User className="w-5 h-5" />;
         }
-        return null;
+        return <CircleDashed className="w-5 h-5 opacity-40" />;
     };
 
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleTimeString('en-US', {
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            second: '2-digit'
         });
     };
 
@@ -64,24 +58,34 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
         }
     };
 
-    const renderSeat = (seatNumber, position) => {
+    const renderSeat = (seatNumber) => {
         const seat = getSeatData(seatNumber);
-        const status = getSeatStatus(seat);
-        const colorClass = getSeatColor(status);
+        const state = seat.state || 'EMPTY';
+        const colorClass = getSeatColor(state, seat.number);
+        const isSuspicious = state === 'LUGGAGE';
 
         const tooltipContent = (
-            <div className="text-left">
-                <div className="font-semibold mb-1">Seat {seat.number}</div>
-                <div className="text-xs space-y-0.5">
-                    <div>Status: <span className="capitalize">{status}</span></div>
-                    {seat.occupied && (
-                        <div>Passengers: {seat.passengerCount}</div>
+            <div className="text-left w-48">
+                <div className="font-bold text-sm mb-1 pb-1 border-b border-slate-600 flex justify-between">
+                    <span>Seat {seat.number}</span>
+                    <span className="text-xs uppercase px-2 py-0.5 rounded bg-black/30">
+                        {state}
+                    </span>
+                </div>
+                <div className="text-xs space-y-1 mt-2">
+                    <div className="text-slate-300">
+                        Status: <strong className={
+                            state === 'OCCUPIED' ? 'text-emerald-400' :
+                            state === 'LUGGAGE' ? 'text-red-400' : 'text-slate-400'
+                        }>{state}</strong>
+                    </div>
+                    {isSuspicious && (
+                        <div className="text-orange-400 font-semibold animate-pulse">
+                            ⚠️ Suspicious Luggage
+                        </div>
                     )}
-                    {seat.hasLuggage && (
-                        <div className="text-orange-400">⚠ Luggage Detected</div>
-                    )}
-                    <div className="text-slate-400 mt-1">
-                        Updated: {formatTime(seat.lastUpdated)}
+                    <div className="text-slate-500 mt-2 text-[10px]">
+                        Last Update: {formatTime(seat.lastUpdated)}
                     </div>
                 </div>
             </div>
@@ -90,24 +94,33 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
         return (
             <Tooltip content={tooltipContent} position="top" key={seatNumber}>
                 <motion.button
+                    layout
+                    initial={{ scale: 0.9, opacity: 0.5 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleSeatClick(seat)}
-                    className={`relative w-full aspect-square rounded-lg border-2 ${colorClass} 
+                    className={`relative w-full aspect-square rounded-xl border-2 ${colorClass} 
                         transition-all duration-300 flex items-center justify-center
-                        hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400
-                        ${selectedSeat === seat.number ? 'ring-2 ring-blue-500 scale-105' : ''}`}
-                    aria-label={`Seat ${seat.number}, ${status}${seat.hasLuggage ? ', luggage alert' : ''}`}
+                        focus:outline-none focus:ring-2 focus:ring-blue-400 overflow-hidden
+                        ${selectedSeat === seat.number ? 'ring-2 ring-blue-500 scale-105 shadow-xl font-bold' : ''}`}
+                    aria-label={`Seat ${seat.number}, ${state}`}
                     aria-pressed={selectedSeat === seat.number}
                     tabIndex={0}
                 >
-                    <div className="flex flex-col items-center gap-1">
-                        {getSeatIcon(status, seat)}
-                        <span className="text-xs font-semibold">{seat.number}</span>
+                    {/* Blinking overlay for luggage */}
+                    {isSuspicious && (
+                        <div className="absolute inset-0 bg-red-500/20 animate-ping opacity-75" />
+                    )}
+                    
+                    <div className={`flex flex-col items-center gap-1 z-10 ${isSuspicious ? 'animate-pulse' : ''}`}>
+                        {getSeatIcon(state)}
+                        <span className="text-[11px] font-bold tracking-wider">{seat.number}</span>
                     </div>
 
-                    {seat.hasLuggage && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse" />
+                    {isSuspicious && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
                     )}
                 </motion.button>
             </Tooltip>
@@ -118,27 +131,29 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
         const startSeat = rowIndex * seatsPerRow + 1;
 
         return (
-            <div key={rowIndex} className="grid grid-cols-9 gap-2 items-center">
+            <div key={rowIndex} className="grid grid-cols-9 gap-3 items-center mb-3">
                 {/* Left side - 2 seats */}
-                <div className="col-span-2 grid grid-cols-2 gap-2">
-                    {renderSeat(startSeat, 'left-1')}
-                    {renderSeat(startSeat + 1, 'left-2')}
+                <div className="col-span-2 grid grid-cols-2 gap-3">
+                    {renderSeat(startSeat)}
+                    {renderSeat(startSeat + 1)}
                 </div>
 
                 {/* Aisle */}
-                <div className="col-span-1 flex items-center justify-center">
-                    <div className="h-full w-0.5 bg-slate-700/30 rounded-full" />
+                <div className="col-span-1 flex items-center justify-center h-full">
+                    <div className="h-full w-1 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 rounded-full opacity-50" />
                 </div>
 
                 {/* Right side - 2 seats */}
-                <div className="col-span-2 grid grid-cols-2 gap-2">
-                    {renderSeat(startSeat + 2, 'right-1')}
-                    {renderSeat(startSeat + 3, 'right-2')}
+                <div className="col-span-2 grid grid-cols-2 gap-3">
+                    {renderSeat(startSeat + 2)}
+                    {renderSeat(startSeat + 3)}
                 </div>
 
                 {/* Row label */}
                 <div className="col-span-4 text-right">
-                    <span className="text-xs text-slate-500 font-medium">Row {rowIndex + 1}</span>
+                    <div className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 text-[10px] text-slate-400 font-bold tracking-wider uppercase border border-slate-700">
+                        Row {rowIndex + 1}
+                    </div>
                 </div>
             </div>
         );
@@ -146,80 +161,65 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
 
     return (
         <div
-            className="glass-card rounded-xl p-6"
+            className="card !p-0 overflow-hidden"
             role="region"
             aria-label="Bus seat occupancy grid"
         >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 p-6 border-b border-[#1F2937] bg-[#0A0A0A]">
                 <div>
-                    <h3 className="text-xl font-bold text-white light:text-slate-900">
-                        Seat Occupancy Map
+                    <h3 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                        Real-Time Mapping
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
                     </h3>
-                    <p className="text-sm text-slate-400 light:text-slate-600 mt-1">
-                        Real-time seat status monitoring
+                    <p className="text-sm text-slate-400 mt-1 font-medium">
+                        Live monitoring with 3-state AI computer vision
                     </p>
                 </div>
 
                 {/* Legend */}
-                <div className="flex items-center gap-4 text-xs">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded bg-slate-500/10 border-2 border-slate-600" />
-                        <span className="text-slate-400">Vacant</span>
+                <div className="flex flex-wrap items-center gap-6 mt-4 sm:mt-0 text-sm font-bold bg-slate-950/50 px-4 py-2 rounded-lg border border-slate-800">
+                    <div className="flex items-center gap-2 text-emerald-400">
+                        <span className="text-lg leading-none">🟩</span>
+                        <span className="uppercase tracking-widest">Occupied</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded bg-emerald-500/20 border-2 border-emerald-500" />
-                        <span className="text-slate-400">Occupied</span>
+                    <div className="flex items-center gap-2 text-red-500">
+                        <span className="text-lg leading-none animate-pulse">🟧</span>
+                        <span className="uppercase tracking-widest animate-pulse">Luggage</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded bg-red-500/20 border-2 border-red-500" />
-                        <span className="text-slate-400">Alert</span>
+                    <div className="flex items-center gap-2 text-slate-400">
+                        <span className="text-lg leading-none">⬜</span>
+                        <span className="uppercase tracking-widest">Empty</span>
                     </div>
                 </div>
             </div>
 
             {/* Bus Front Indicator */}
-            <div className="flex items-center justify-center mb-4">
-                <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <MapPin className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm font-medium text-blue-400">Front of Bus</span>
+            <div className="flex items-center justify-center mb-8 relative px-6">
+                <div className="absolute inset-0 flex items-center px-6">
+                    <div className="w-full border-t border-[#1F2937] border-dashed"></div>
+                </div>
+                <div className="relative flex items-center gap-2 px-6 py-2 bg-[#111827] border border-[#6366F1]/50 rounded-full">
+                    <MapPin className="w-5 h-5 text-[#6366F1]" />
+                    <span className="text-sm font-bold tracking-widest uppercase text-[#6366F1]">Front of Bus</span>
                 </div>
             </div>
 
             {/* Seat Grid */}
             <div
-                className="space-y-3"
+                className="space-y-1 relative px-6"
                 role="grid"
                 aria-label="Seat grid with 10 rows and 4 seats per row"
             >
                 {Array.from({ length: rows }, (_, i) => renderRow(i))}
             </div>
 
-            {/* Summary Stats */}
-            <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-3 gap-4">
-                <div className="text-center">
-                    <div className="text-2xl font-bold text-emerald-400">
-                        {seats.filter(s => s.occupied).length}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Occupied</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-2xl font-bold text-slate-400">
-                        {40 - seats.filter(s => s.occupied).length}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Vacant</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-2xl font-bold text-red-400">
-                        {seats.filter(s => s.hasLuggage).length}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Alerts</div>
-                </div>
-            </div>
-
-            {/* Keyboard Navigation Hint */}
-            <div className="mt-4 text-center">
-                <p className="text-xs text-slate-500">
-                    Use Tab to navigate seats, Enter to select
+            {/* Interaction Hint */}
+            <div className="mt-8 p-4 text-center border-t border-[#1F2937] bg-[#0A0A0A]">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                    The seat grid dynamically reflects real-time occupancy using backend polling and state-driven UI updates with only three normalized classifications.
                 </p>
             </div>
         </div>

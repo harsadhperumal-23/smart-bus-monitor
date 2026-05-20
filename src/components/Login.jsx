@@ -33,11 +33,11 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: '#161616', position: 'relative' }}>
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+                <div style={{ position: 'absolute', top: '25%', left: '25%', width: 384, height: 384, background: 'rgba(59,130,246,0.05)', borderRadius: '50%', filter: 'blur(80px)', animation: 'pulse 4s ease-in-out infinite' }}></div>
+                <div style={{ position: 'absolute', bottom: '25%', right: '25%', width: 384, height: 384, background: 'rgba(16,185,129,0.05)', borderRadius: '50%', filter: 'blur(80px)', animation: 'pulse 4s ease-in-out infinite', animationDelay: '1.5s' }}></div>
             </div>
 
             <motion.div
@@ -47,7 +47,7 @@ const Login = () => {
                 className="relative w-full max-w-md"
             >
                 {/* Glassmorphic Login Card */}
-                <div className="glass-card rounded-2xl shadow-2xl p-8">
+                <div style={{ background: '#202020', border: '1px solid #404040', borderRadius: 16, padding: '32px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
                     {/* Logo & Title */}
                     <div className="text-center mb-8">
                         <motion.div
@@ -75,9 +75,11 @@ const Login = () => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    style={{ width: '100%', paddingLeft: 44, paddingRight: 16, paddingTop: 12, paddingBottom: 12, background: '#161616', border: '1px solid #404040', borderRadius: 8, color: '#ffffff', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s' }}
                                     placeholder="admin@bus.com"
                                     required
+                                    onFocus={e => e.target.style.borderColor = '#3b82f6'}
+                                    onBlur={e => e.target.style.borderColor = '#404040'}
                                 />
                             </div>
                         </div>
@@ -93,9 +95,11 @@ const Login = () => {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    style={{ width: '100%', paddingLeft: 44, paddingRight: 16, paddingTop: 12, paddingBottom: 12, background: '#161616', border: '1px solid #404040', borderRadius: 8, color: '#ffffff', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', transition: 'border-color 0.15s' }}
                                     placeholder="••••••••"
                                     required
+                                    onFocus={e => e.target.style.borderColor = '#3b82f6'}
+                                    onBlur={e => e.target.style.borderColor = '#404040'}
                                 />
                             </div>
                         </div>
@@ -132,7 +136,7 @@ const Login = () => {
                     </form>
 
                     {/* Demo Credentials */}
-                    <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
+                    <div style={{ marginTop: 20, padding: '12px 16px', background: '#161616', borderRadius: 8, border: '1px solid #333' }}>
                         <p className="text-xs text-slate-400 text-center">
                             <strong className="text-slate-300">Demo Credentials:</strong><br />
                             Email: admin@bus.com<br />

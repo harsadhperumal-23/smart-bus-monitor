@@ -12,6 +12,210 @@ export const busRoute = [
     [12.9716, 77.5946], // Bengaluru
 ];
 
+// ── MULTI-BUS FLEET DATA ──────────────────────────────────────────────────
+// Three buses at different positions along the route with distinct statuses.
+const FLEET_ROUTE_OFFSETS = [0, 3, 6]; // index into busRoute for each bus
+
+export const MULTI_BUS_DATA = [
+    {
+        busId: 'BUS-001',
+        route: 'Kochi Express',
+        routeCode: 'R-42',
+        status: 'online',           // green
+        gpsLocation: { lat: busRoute[0][0], lng: busRoute[0][1] },
+        passengers: 28,
+        capacity: 40,
+        speed: 62,                  // km/h
+        heading: 45,
+        driver: { name: 'Ravi Kumar', id: 'DRV-01' },
+        nextStop: 'Thrissur',
+        eta: '10:45 AM',
+        lastUpdated: new Date().toISOString(),
+        alerts: [],
+        routeIndex: 0,
+    },
+    {
+        busId: 'BUS-002',
+        route: 'Coimbatore Link',
+        routeCode: 'R-17',
+        status: 'warning',          // amber
+        gpsLocation: { lat: busRoute[3][0], lng: busRoute[3][1] },
+        passengers: 36,
+        capacity: 40,
+        speed: 38,
+        heading: 30,
+        driver: { name: 'Anitha Devi', id: 'DRV-02' },
+        nextStop: 'Salem',
+        eta: '11:30 AM',
+        lastUpdated: new Date().toISOString(),
+        alerts: [{ id: 1, type: 'luggage', severity: 'warning', message: 'Luggage on Seat 12', timestamp: new Date().toLocaleTimeString() }],
+        routeIndex: 3,
+    },
+    {
+        busId: 'BUS-003',
+        route: 'Bengaluru Fast',
+        routeCode: 'R-09',
+        status: 'offline',          // red
+        gpsLocation: { lat: busRoute[6][0], lng: busRoute[6][1] },
+        passengers: 12,
+        capacity: 40,
+        speed: 0,
+        heading: 0,
+        driver: { name: 'Suresh Babu', id: 'DRV-03' },
+        nextStop: 'Bengaluru',
+        eta: '12:15 PM',
+        lastUpdated: new Date(Date.now() - 120000).toISOString(), // 2 mins ago
+        alerts: [{ id: 2, type: 'critical', severity: 'critical', message: 'Connection Lost', timestamp: new Date().toLocaleTimeString() }],
+        routeIndex: 6,
+    },
+];
+
+// Helper – returns a fresh copy of MULTI_BUS_DATA with slightly randomised
+// passengers/speed so live-polling feels alive.
+export function getFleetSnapshot() {
+    return MULTI_BUS_DATA.map((bus, i) => {
+        const jitter = Math.floor((Math.random() - 0.5) * 4);
+        const newPax = Math.max(0, Math.min(bus.capacity, bus.passengers + jitter));
+        const newSpeed = bus.status === 'offline'
+            ? 0
+            : Math.max(20, Math.min(90, bus.speed + Math.floor((Math.random() - 0.5) * 10)));
+        // Slowly advance position along route
+        const nextIndex = (bus.routeIndex + 1) % busRoute.length;
+        // Interpolate position between current and next waypoint
+        const t = (Date.now() % 30000) / 30000; // 0→1 over 30s
+        const lat = busRoute[bus.routeIndex][0] + (busRoute[nextIndex][0] - busRoute[bus.routeIndex][0]) * t;
+        const lng = busRoute[bus.routeIndex][1] + (busRoute[nextIndex][1] - busRoute[bus.routeIndex][1]) * t;
+        return {
+            ...bus,
+            passengers: bus.status === 'offline' ? bus.passengers : newPax,
+            speed: newSpeed,
+            gpsLocation: { lat, lng },
+            lastUpdated: bus.status === 'offline' ? bus.lastUpdated : new Date().toISOString(),
+        };
+    });
+}
+
+// ── SMART ALERTS DATA ENGINE ───────────────────────────────────────────────
+// Rolling pool of alert templates; generateSmartAlerts() picks a random
+// subset and stamps them with live timestamps so the feed feels live.
+const ALERT_TEMPLATES = [
+    // errors
+    { type: 'error',   category: 'connection', busId: 'BUS-003', message: 'GPS signal lost — no telemetry for 2+ minutes' },
+    { type: 'error',   category: 'hardware',   busId: 'BUS-002', message: 'Door sensor malfunction on rear exit' },
+    { type: 'error',   category: 'connection', busId: 'BUS-001', message: 'Backend API timeout — retrying connection' },
+    { type: 'error',   category: 'safety',     busId: 'BUS-003', message: 'Emergency brake event detected' },
+    { type: 'error',   category: 'hardware',   busId: 'BUS-002', message: 'Seat sensor offline — rows 3–4 unresponsive' },
+    // warnings
+    { type: 'warning', category: 'capacity',   busId: 'BUS-002', message: 'Occupancy at 90% — near full capacity' },
+    { type: 'warning', category: 'luggage',    busId: 'BUS-001', message: 'Unattended luggage detected on Seat 12' },
+    { type: 'warning', category: 'schedule',   busId: 'BUS-003', message: 'Route deviation — 3.2 km off planned path' },
+    { type: 'warning', category: 'driver',     busId: 'BUS-002', message: 'Driver break overdue by 15 minutes' },
+    { type: 'warning', category: 'capacity',   busId: 'BUS-001', message: 'Standing passengers detected — safety threshold' },
+    { type: 'warning', category: 'schedule',   busId: 'BUS-002', message: 'ETA delayed by 8 min due to traffic' },
+    // info
+    { type: 'info',    category: 'schedule',   busId: 'BUS-001', message: 'Departed Thrissur — on schedule' },
+    { type: 'info',    category: 'passenger',  busId: 'BUS-002', message: '4 passengers boarded at Coimbatore stop' },
+    { type: 'info',    category: 'system',     busId: 'all',     message: 'Telemetry sync complete — all buses updated' },
+    { type: 'info',    category: 'schedule',   busId: 'BUS-003', message: 'Next scheduled stop: Bengaluru Central' },
+    // success
+    { type: 'success', category: 'system',     busId: 'BUS-001', message: 'GPS lock re-established — tracking resumed' },
+    { type: 'success', category: 'safety',     busId: 'BUS-002', message: 'Driver check-in confirmed — status active' },
+    { type: 'success', category: 'schedule',   busId: 'BUS-003', message: 'Arrived at Hosur stop — 2 min early' },
+    { type: 'success', category: 'system',     busId: 'all',     message: 'Fleet health check passed — all sensors OK' },
+    { type: 'success', category: 'passenger',  busId: 'BUS-001', message: 'Passenger count reconciled — 28 confirmed' },
+];
+
+let _alertPool = [];
+
+export function generateSmartAlerts() {
+    // Seed the pool once, then prepend a fresh random alert every call
+    if (_alertPool.length === 0) {
+        // Take the first 8 templates as initial state
+        _alertPool = ALERT_TEMPLATES.slice(0, 8).map((t, i) => ({
+            ...t,
+            id: Date.now() - (8 - i) * 45000,
+            timestamp: new Date(Date.now() - (8 - i) * 45000).toISOString(),
+        }));
+    }
+
+    // 30% chance per poll of a new event appearing
+    if (Math.random() < 0.3) {
+        const template = ALERT_TEMPLATES[Math.floor(Math.random() * ALERT_TEMPLATES.length)];
+        _alertPool = [
+            { ...template, id: Date.now(), timestamp: new Date().toISOString() },
+            ..._alertPool,
+        ].slice(0, 20); // keep max 20
+    }
+
+    return [..._alertPool]; // latest first
+}
+
+// ── DRIVER ROSTER ─────────────────────────────────────────────────────────────
+// Static driver records mapped 1-to-1 with MULTI_BUS_DATA buses.
+// getDriverRoster() returns a live snapshot with jittered lastActive timestamps.
+
+export const DRIVER_ROSTER = [
+    {
+        id:         'DRV-01',
+        name:       'Ravi Kumar',
+        busId:      'BUS-001',
+        route:      'Kochi Express',
+        avatarInitials: 'RK',
+        avatarColor:    '#6366f1',
+        status:     'on_duty',      // on_duty | on_break | offline
+        phone:      '+91 98400 11001',
+        experience: '7 yrs',
+        rating:     4.8,
+        lastActive: new Date().toISOString(),
+        shifStart:  '06:00 AM',
+        shiftEnd:   '02:00 PM',
+    },
+    {
+        id:         'DRV-02',
+        name:       'Anitha Devi',
+        busId:      'BUS-002',
+        route:      'Coimbatore Link',
+        avatarInitials: 'AD',
+        avatarColor:    '#F59E0B',
+        status:     'on_break',
+        phone:      '+91 98400 22002',
+        experience: '4 yrs',
+        rating:     4.5,
+        lastActive: new Date(Date.now() - 8 * 60 * 1000).toISOString(), // 8 min ago
+        shifStart:  '08:00 AM',
+        shiftEnd:   '04:00 PM',
+    },
+    {
+        id:         'DRV-03',
+        name:       'Suresh Babu',
+        busId:      'BUS-003',
+        route:      'Bengaluru Fast',
+        avatarInitials: 'SB',
+        avatarColor:    '#EF4444',
+        status:     'offline',
+        phone:      '+91 98400 33003',
+        experience: '11 yrs',
+        rating:     4.6,
+        lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 h ago
+        shifStart:  '10:00 AM',
+        shiftEnd:   '06:00 PM',
+    },
+];
+
+export function getDriverRoster() {
+    return DRIVER_ROSTER.map(driver => {
+        // on_duty drivers show a recently-updated lastActive
+        if (driver.status === 'on_duty') {
+            return {
+                ...driver,
+                lastActive: new Date(Date.now() - Math.floor(Math.random() * 60) * 1000).toISOString(),
+            };
+        }
+        return { ...driver };
+    });
+}
+
+
 // Initial bus state
 let currentBusData = {
     totalPassengers: 18,
@@ -187,30 +391,125 @@ export function getRouteData() {
     ];
 }
 
-// Generate AI insights
+// ── AI INSIGHTS ENGINE ────────────────────────────────────────────────────────
+// Returns 3–5 structured insight objects driven by live fleet data.
+// Each object: { id, category, icon, message, metric, trend }
+// trend: 'up' | 'down' | 'neutral'
+// icon:  lucide icon name string (resolved in AIInsightsPanel)
+
+const INSIGHT_POOL = [
+    {
+        id: 'route-101-occ',
+        category: 'Occupancy',
+        icon: 'Users',
+        message: 'Route 101 has 85% occupancy during peak hours (08:00–10:00)',
+        metric: '85%',
+        trend: 'up',
+    },
+    {
+        id: 'route-103-eff',
+        category: 'Efficiency',
+        icon: 'TrendingUp',
+        message: 'Route 103 leads fleet efficiency at 95% — best performing route today',
+        metric: '95%',
+        trend: 'up',
+    },
+    {
+        id: 'avg-occ',
+        category: 'Fleet',
+        icon: 'BarChart2',
+        message: 'Fleet average occupancy is 72% — within healthy operating range',
+        metric: '72%',
+        trend: 'neutral',
+    },
+    {
+        id: 'driver-perf',
+        category: 'Driver',
+        icon: 'UserCheck',
+        message: 'Driver performance peaks between 06:00–09:00 — 98% on-time rate',
+        metric: '98%',
+        trend: 'up',
+    },
+    {
+        id: 'route-104-warn',
+        category: 'Alert',
+        icon: 'AlertTriangle',
+        message: 'Route 104 shows 12% delay rate — recommend schedule review',
+        metric: '12%',
+        trend: 'down',
+    },
+    {
+        id: 'luggage-peak',
+        category: 'Safety',
+        icon: 'Package',
+        message: 'Peak luggage activity detected between 14:00–16:00 — 6 incidents today',
+        metric: '6',
+        trend: 'down',
+    },
+    {
+        id: 'bus-002-cap',
+        category: 'Capacity',
+        icon: 'Bus',
+        message: 'BUS-002 running at 90% capacity — consider deploying overflow service',
+        metric: '90%',
+        trend: 'down',
+    },
+    {
+        id: 'sensor-health',
+        category: 'System',
+        icon: 'Activity',
+        message: 'All seat sensors operational — last full health check 3 minutes ago',
+        metric: '100%',
+        trend: 'up',
+    },
+];
+
 export function generateAIInsights() {
-    const insights = [
-        'Peak luggage activity detected between 14:00-16:00',
-        'Route 103 shows highest efficiency at 95%',
-        'Average occupancy rate: 72% across all routes',
-        'Driver performance optimal during morning hours',
-        'Recommend additional monitoring for Route 104',
-    ];
-
-    const luggageCount = currentBusData.seats.filter(s => s.hasLuggage).length;
+    const luggageCount  = currentBusData.seats.filter(s => s.hasLuggage).length;
     const occupiedCount = currentBusData.seats.filter(s => s.occupied).length;
+    const occupancyPct  = Math.round((occupiedCount / currentBusData.seats.length) * 100);
 
-    const dynamicInsights = [];
+    // Dynamic insights derived from live seat state
+    const dynamic = [];
 
     if (luggageCount > 3) {
-        dynamicInsights.push(`High luggage alert: ${luggageCount} seats with luggage detected`);
+        dynamic.push({
+            id:       `dyn-luggage-${luggageCount}`,
+            category: 'Safety',
+            icon:     'Package',
+            message:  `${luggageCount} seats with unattended luggage — immediate inspection advised`,
+            metric:   `${luggageCount}`,
+            trend:    'down',
+        });
     }
 
     if (occupiedCount > 30) {
-        dynamicInsights.push('Bus is near capacity - consider additional service');
+        dynamic.push({
+            id:       'dyn-capacity',
+            category: 'Capacity',
+            icon:     'Users',
+            message:  `Bus near full capacity at ${occupancyPct}% — standing passengers detected`,
+            metric:   `${occupancyPct}%`,
+            trend:    'down',
+        });
     }
 
-    return [...dynamicInsights, ...insights.slice(0, 3)];
+    if (occupancyPct < 40) {
+        dynamic.push({
+            id:       'dyn-low-occ',
+            category: 'Occupancy',
+            icon:     'TrendingDown',
+            message:  `Low occupancy at ${occupancyPct}% — consider consolidating with another service`,
+            metric:   `${occupancyPct}%`,
+            trend:    'neutral',
+        });
+    }
+
+    // Pick 3–5 from static pool (shuffle so it varies each call)
+    const shuffled = [...INSIGHT_POOL].sort(() => Math.random() - 0.5);
+    const staticPick = shuffled.slice(0, Math.max(0, 5 - dynamic.length));
+
+    return [...dynamic, ...staticPick].slice(0, 5);
 }
 
 // Export current bus data

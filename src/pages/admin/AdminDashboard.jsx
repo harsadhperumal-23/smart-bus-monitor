@@ -4,6 +4,7 @@ import MetricsCard from '../components/MetricsCard';
 import BusMap from '../components/BusMap';
 import LiveAlertFeed from '../components/LiveAlertFeed';
 import SeatGrid from '../components/SeatGrid';
+import LiveSeatMonitor from '../../components/LiveSeatMonitor';
 import useAlertNotifications from '../hooks/useAlertNotifications';
 import {
     generateBusMetrics,
@@ -97,6 +98,25 @@ const Operations = () => {
                     icon={UserCheck}
                     isLoading={isLoading}
                 />
+            </div>
+
+            {/* Live Seat Monitor - Real-time Sensor Data */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                    <LiveSeatMonitor 
+                        seatId="DEMO-SEAT"
+                        pollInterval={800}
+                    />
+                </div>
+                <div className="lg:col-span-2 bg-slate-900/50 border border-slate-700 rounded-2xl p-6">
+                    <h2 className="text-xl font-bold text-white mb-4">Sensor Information</h2>
+                    <div className="space-y-3 text-slate-300">
+                        <p>🔍 <strong>Real-time Monitoring:</strong> The Live Seat Monitor displays real-time sensor data with smooth animations.</p>
+                        <p>📊 <strong>Features:</strong> Distance tracking (mm/cm), status indicators, 10-reading history, and signal strength.</p>
+                        <p>🎯 <strong>Status Codes:</strong> 🧍 PASSENGER (Red) • 🧳 LUGGAGE (Orange) • 🪑 EMPTY (Green)</p>
+                        <p>⚡ <strong>Polling:</strong> Updates every 800ms with smooth Framer Motion animations.</p>
+                    </div>
+                </div>
             </div>
 
             {/* Seat Occupancy Grid */}

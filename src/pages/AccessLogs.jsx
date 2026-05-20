@@ -87,90 +87,78 @@ const AccessLogs = () => {
         });
     };
 
-    // Check if user is admin
     if (user?.role !== 'ADMIN') {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="glass-card p-8 text-center max-w-md">
+                <div className="card p-8 text-center max-w-md">
                     <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
-                    <p className="text-slate-400">
-                        Only administrators can view access logs.
-                    </p>
+                    <p style={{ color: '#9CA3AF' }}>Only administrators can view access logs.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
+        <div className="h-full overflow-y-auto space-y-6 max-w-[1600px] mx-auto w-full px-2 sm:px-6 pb-8 pt-6" id="main-content">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Access Logs</h1>
-                    <p className="text-slate-400">Monitor all system access and user activities</p>
-                </div>
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleExport}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition-all"
-                >
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                </motion.button>
+                <h1 className="text-2xl font-bold text-white mb-1">Access Logs</h1>
+                <p style={{ color: '#9CA3AF' }}>Monitor all system access and user activities</p>
+            </div>
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleExport}
+                className="btn-secondary flex items-center gap-2"
+            >
+                <Download className="w-4 h-4" />
+                Export CSV
+            </motion.button>
             </div>
 
-            {/* Statistics Cards */}
             {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="glass-card p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-500/10 rounded-lg">
-                                <Activity className="w-6 h-6 text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Total Requests</p>
-                                <p className="text-2xl font-bold text-white">{stats.totalRequests}</p>
-                            </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="card flex items-center gap-4">
+                        <div className="p-3 bg-indigo-500/10 rounded-xl flex-shrink-0">
+                            <Activity className="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-medium mb-1" style={{ color: '#9CA3AF' }}>Total Requests</p>
+                            <p className="text-2xl font-bold font-mono text-white">{stats.totalRequests}</p>
                         </div>
                     </div>
-
-                    <div className="glass-card p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-purple-500/10 rounded-lg">
-                                <User className="w-6 h-6 text-purple-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Unique Users</p>
-                                <p className="text-2xl font-bold text-white">{stats.uniqueUsers}</p>
-                            </div>
+                    <div className="card flex items-center gap-4">
+                        <div className="p-3 bg-indigo-500/10 rounded-xl flex-shrink-0">
+                            <User className="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-medium mb-1" style={{ color: '#9CA3AF' }}>Unique Users</p>
+                            <p className="text-2xl font-bold font-mono text-white">{stats.uniqueUsers}</p>
                         </div>
                     </div>
-
-                    <div className="glass-card p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-emerald-500/10 rounded-lg">
-                                <Clock className="w-6 h-6 text-emerald-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-400">Period</p>
-                                <p className="text-2xl font-bold text-white">{stats.period}</p>
-                            </div>
+                    <div className="card flex items-center gap-4">
+                        <div className="p-3 bg-[#22C55E]/10 rounded-xl flex-shrink-0">
+                            <Clock className="w-6 h-6 text-[#22C55E]" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-medium mb-1" style={{ color: '#9CA3AF' }}>Period</p>
+                            <p className="text-2xl font-bold font-mono text-white">{stats.period}</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Filters */}
-            <div className="glass-card p-4">
+            <div className="card">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label className="block text-sm text-slate-400 mb-2">Action</label>
+                        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#9CA3AF' }}>Action</label>
                         <select
                             value={filters.action}
                             onChange={(e) => setFilters({ ...filters, action: e.target.value, page: 1 })}
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="input"
                         >
                             <option value="">All Actions</option>
                             <option value="LOGIN">Login</option>
@@ -181,31 +169,22 @@ const AccessLogs = () => {
                             <option value="VIEW_ACCESS_LOGS">View Access Logs</option>
                         </select>
                     </div>
-
                     <div>
-                        <label className="block text-sm text-slate-400 mb-2">Start Date</label>
-                        <input
-                            type="date"
-                            value={filters.startDate}
+                        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#9CA3AF' }}>Start Date</label>
+                        <input type="date" value={filters.startDate}
                             onChange={(e) => setFilters({ ...filters, startDate: e.target.value, page: 1 })}
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                            className="input" />
                     </div>
-
                     <div>
-                        <label className="block text-sm text-slate-400 mb-2">End Date</label>
-                        <input
-                            type="date"
-                            value={filters.endDate}
+                        <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#9CA3AF' }}>End Date</label>
+                        <input type="date" value={filters.endDate}
                             onChange={(e) => setFilters({ ...filters, endDate: e.target.value, page: 1 })}
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                            className="input" />
                     </div>
-
                     <div className="flex items-end">
                         <button
                             onClick={() => setFilters({ action: '', startDate: '', endDate: '', page: 1, limit: 20 })}
-                            className="w-full px-4 py-2 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 rounded-lg border border-slate-500/20 transition-all"
+                            className="btn-ghost w-full"
                         >
                             Clear Filters
                         </button>
@@ -214,10 +193,10 @@ const AccessLogs = () => {
             </div>
 
             {/* Logs Table */}
-            <div className="glass-card overflow-hidden">
+            <div className="card overflow-hidden p-0">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-white/5 border-b border-white/10">
+                        <thead className="border-b border-[#404040]" style={{ backgroundColor: '#1a1a1a' }}>
                             <tr>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                                     Timestamp
@@ -262,7 +241,7 @@ const AccessLogs = () => {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.02 }}
-                                        className="hover:bg-white/5 transition-colors"
+                                        className="hover:bg-[#2a2a2a] transition-colors duration-200"
                                     >
                                         <td className="px-4 py-3 text-sm text-slate-300">
                                             {formatTimestamp(log.timestamp)}
@@ -308,23 +287,15 @@ const AccessLogs = () => {
 
                 {/* Pagination */}
                 {logs.length > 0 && (
-                    <div className="px-4 py-3 bg-white/5 border-t border-white/10 flex items-center justify-between">
-                        <div className="text-sm text-slate-400">
-                            Showing page {filters.page}
-                        </div>
+                    <div className="px-5 py-3 border-t border-[#404040] flex items-center justify-between" style={{ backgroundColor: '#1a1a1a' }}>
+                        <div className="text-sm" style={{ color: '#9CA3AF' }}>Showing page {filters.page}</div>
                         <div className="flex gap-2">
-                            <button
-                                onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-                                disabled={filters.page === 1}
-                                className="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            >
+                            <button onClick={() => setFilters({ ...filters, page: filters.page - 1 })} disabled={filters.page === 1}
+                                className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
                                 Previous
                             </button>
-                            <button
-                                onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-                                disabled={logs.length < filters.limit}
-                                className="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-400 rounded border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            >
+                            <button onClick={() => setFilters({ ...filters, page: filters.page + 1 })} disabled={logs.length < filters.limit}
+                                className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
                                 Next
                             </button>
                         </div>

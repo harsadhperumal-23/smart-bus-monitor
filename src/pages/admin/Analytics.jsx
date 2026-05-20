@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Lightbulb, TrendingUp, AlertCircle } from 'lucide-react';
+import { Download } from 'lucide-react';
 import Papa from 'papaparse';
-import { updateSeats, getCurrentSeats, generateAIInsights, getCurrentBusData } from '../services/mockDataService';
+import { updateSeats, getCurrentSeats, getCurrentBusData } from '../services/mockDataService';
+import AIInsightsPanel from '../../components/AIInsightsPanel';
 
 const Analytics = () => {
     const [seats, setSeats] = useState(getCurrentSeats());
-    const [insights, setInsights] = useState(generateAIInsights());
 
     useEffect(() => {
         // Update seats every 5 seconds
         const interval = setInterval(() => {
             const { seats: newSeats } = updateSeats();
             setSeats(newSeats);
-            setInsights(generateAIInsights());
         }, 5000);
 
         return () => clearInterval(interval);
@@ -129,57 +128,8 @@ const Analytics = () => {
                 </div>
 
                 {/* AI Insights Panel - 1 column */}
-                <div className="glass-card rounded-xl p-6">
-                    <div className="flex items-center gap-2 mb-6">
-                        <Lightbulb className="w-6 h-6 text-yellow-400" />
-                        <h2 className="text-xl font-semibold text-white">AI Insights</h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        {insights.map((insight, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="p-4 bg-white/5 rounded-lg border border-white/10 hover:border-blue-500/30 transition-all"
-                            >
-                                <div className="flex items-start gap-3">
-                                    {index === 0 ? (
-                                        <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-                                    ) : (
-                                        <TrendingUp className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    )}
-                                    <p className="text-sm text-slate-300 leading-relaxed">{insight}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Summary Stats */}
-                    <div className="mt-6 pt-6 border-t border-white/10">
-                        <h3 className="text-sm font-semibold text-slate-400 mb-3">Current Status</h3>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-400">Occupied:</span>
-                                <span className="text-emerald-400 font-semibold">
-                                    {seats.filter(s => s.status === 'occupied').length} seats
-                                </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-400">Luggage:</span>
-                                <span className="text-orange-400 font-semibold">
-                                    {seats.filter(s => s.status === 'luggage').length} seats
-                                </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-400">Empty:</span>
-                                <span className="text-slate-400 font-semibold">
-                                    {seats.filter(s => s.status === 'empty').length} seats
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                <div className="lg:col-span-1">
+                    <AIInsightsPanel title="AI Insights" refreshMs={5000} />
                 </div>
             </div>
         </div>

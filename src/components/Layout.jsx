@@ -1,31 +1,49 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import Header from "./Header";
+import KpiStrip from "./KpiStrip";
 
-const Layout = () => {
-    return (
-        <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 light:from-slate-50 light:via-slate-100 light:to-slate-50 overflow-hidden">
-            {/* Sidebar - Fixed width */}
-            <Sidebar />
+export default function Layout() {
+  return (
+    <div
+      id="app-layout"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+        background: '#161616',
+        color: '#ffffff',
+        fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+      }}
+    >
+      {/* Top Navigation Bar */}
+      <div style={{ flexShrink: 0, zIndex: 50 }}>
+        <Header />
+      </div>
 
-            {/* Main Content Area - Flexes to fill remaining space */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Header - Fixed height */}
-                <Header />
+      {/* KPI Strip — live fleet metrics */}
+      <div style={{ flexShrink: 0, zIndex: 40 }}>
+        <KpiStrip />
+      </div>
 
-                {/* Page Content - Scrollable area */}
-                <main
-                    id="main-content"
-                    className="flex-1 overflow-y-auto p-6"
-                    role="main"
-                    aria-label="Main content"
-                >
-                    <Outlet />
-                </main>
-            </div>
-        </div>
-    );
-};
-
-export default Layout;
+      {/* Main content */}
+      <main
+        id="main-content"
+        role="main"
+        aria-label="Main content"
+        style={{
+          flex: 1,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          overflow: 'hidden',
+          background: '#161616',
+        }}
+      >
+        <Outlet />
+      </main>
+    </div>
+  );
+}

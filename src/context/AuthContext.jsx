@@ -38,15 +38,30 @@ export const AuthProvider = ({ children }) => {
                 setAuthenticated(false);
             }
         } catch (error) {
-            console.error('Session check error:', error);
-            setUser(null);
-            setAuthenticated(false);
+            // Backend unreachable — restore demo session if present
+            const stored = localStorage.getItem('demoUser');
+            if (stored && localStorage.getItem('isAuthenticated') === 'true') {
+                try {
+                    setUser(JSON.parse(stored));
+                    setAuthenticated(true);
+                } catch (_) {
+                    setUser(null);
+                    setAuthenticated(false);
+                }
+            } else {
+                setUser(null);
+                setAuthenticated(false);
+            }
         } finally {
             setLoading(false);
         }
     };
 
     const login = async (email, password) => {
+        // ── Demo bypass (no backend required) ────────────────────────────────
+        const DEMO_EMAIL    = 'admin@bus.com';
+        const DEMO_PASSWORD = 'password';
+
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
@@ -69,6 +84,20 @@ export const AuthProvider = ({ children }) => {
                 return { success: false, message: data.message };
             }
         } catch (error) {
+            // Backend unreachable — fall back to demo credentials
+            if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+                const demoUser = {
+                    id:    'demo-001',
+                    email: DEMO_EMAIL,
+                    name:  'Admin (Demo)',
+                    role:  'admin',
+                };
+                setUser(demoUser);
+                setAuthenticated(true);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('demoUser', JSON.stringify(demoUser));
+                return { success: true };
+            }
             console.error('Login error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }

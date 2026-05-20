@@ -13,16 +13,11 @@ const DriverTracker = () => {
     const [watchId, setWatchId] = useState(null);
 
     useEffect(() => {
-        // Check if geolocation is supported
         if (!navigator.geolocation) {
             setError('GPS not supported by your browser');
             return;
         }
-
-        // Start tracking
         startTracking();
-
-        // Cleanup on unmount
         return () => {
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
@@ -43,19 +38,12 @@ const DriverTracker = () => {
                     speed: position.coords.speed || 0,
                     heading: position.coords.heading || 0
                 };
-
-                // Update local state
                 setCurrentLocation(locationData);
                 setTracking(true);
                 setLastUpdate(new Date());
 
-                // Send to backend
-                axios.post('/api/bus/location', locationData, {
-                    withCredentials: true
-                })
-                    .then(() => {
-                        setUpdateCount(prev => prev + 1);
-                    })
+                axios.post('/api/bus/location', locationData, { withCredentials: true })
+                    .then(() => { setUpdateCount(prev => prev + 1); })
                     .catch((err) => {
                         console.error('Failed to send location:', err);
                         setError('Failed to update location on server');
@@ -64,7 +52,6 @@ const DriverTracker = () => {
             (err) => {
                 console.error('Geolocation error:', err);
                 setTracking(false);
-
                 switch (err.code) {
                     case err.PERMISSION_DENIED:
                         setError('GPS permission denied. Please enable location access.');
@@ -79,53 +66,78 @@ const DriverTracker = () => {
                         setError('An unknown error occurred while tracking location.');
                 }
             },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 10000
-            }
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
-
         setWatchId(id);
     };
 
     const handleBusChange = (e) => {
-        // Clear previous watch
-        if (watchId) {
-            navigator.geolocation.clearWatch(watchId);
-        }
+        if (watchId) { navigator.geolocation.clearWatch(watchId); }
         setSelectedBus(e.target.value);
         setUpdateCount(0);
     };
 
+    const card = {
+        background: '#202020',
+        border: '1px solid #404040',
+        borderRadius: 12,
+        padding: '20px 24px',
+    };
+
+    const dataCell = {
+        background: '#161616',
+        border: '1px solid #333',
+        borderRadius: 8,
+        padding: '12px 14px',
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
-            <div className="max-w-2xl mx-auto">
+        <div style={{ minHeight: '100%', background: '#161616', padding: 24, overflowY: 'auto' }}>
+            <div style={{ maxWidth: 640, margin: '0 auto' }}>
+
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-500/20 rounded-full mb-4">
-                        <MapPin className="w-10 h-10 text-blue-400" />
+                <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: 72, height: 72,
+                        background: 'rgba(59,130,246,0.12)',
+                        border: '1px solid rgba(59,130,246,0.2)',
+                        borderRadius: '50%',
+                        marginBottom: 16,
+                    }}>
+                        <MapPin style={{ width: 32, height: 32, color: '#3b82f6' }} />
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    <h1 style={{ fontSize: 26, fontWeight: 800, color: '#ffffff', marginBottom: 6 }}>
                         Driver GPS Tracker
                     </h1>
-                    <p className="text-slate-400">
+                    <p style={{ color: '#808080', fontSize: 13 }}>
                         Keep this page open to transmit your location
                     </p>
                 </div>
 
                 {/* Bus Selector */}
-                <div className="glass-card rounded-xl p-6 mb-6">
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                <div style={{ ...card, marginBottom: 16 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#666666', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                         Select Bus
                     </label>
                     <select
                         value={selectedBus}
                         onChange={handleBusChange}
-                        className="w-full bg-white/10 text-white px-4 py-3 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        style={{
+                            width: '100%',
+                            background: '#161616',
+                            color: '#ffffff',
+                            padding: '10px 14px',
+                            borderRadius: 8,
+                            border: '1px solid #404040',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            outline: 'none',
+                            fontFamily: 'Inter, sans-serif',
+                        }}
                     >
                         {availableBuses.map(bus => (
-                            <option key={bus} value={bus} className="bg-slate-800">
+                            <option key={bus} value={bus} style={{ background: '#202020' }}>
                                 {bus}
                             </option>
                         ))}
@@ -133,86 +145,89 @@ const DriverTracker = () => {
                 </div>
 
                 {/* Status Card */}
-                <div className="glass-card rounded-xl p-8 mb-6">
+                <div style={{ ...card, marginBottom: 16 }}>
                     {/* Tracking Status */}
-                    <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
-                        <div className="flex items-center gap-3">
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid #333',
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             {tracking ? (
                                 <>
-                                    <CheckCircle className="w-8 h-8 text-emerald-400" />
+                                    <CheckCircle style={{ width: 28, height: 28, color: '#10b981' }} />
                                     <div>
-                                        <div className="text-xl font-bold text-white">GPS Active</div>
-                                        <div className="text-sm text-emerald-400">Tracking {selectedBus}</div>
+                                        <div style={{ fontSize: 17, fontWeight: 700, color: '#ffffff' }}>GPS Active</div>
+                                        <div style={{ fontSize: 12, color: '#10b981', marginTop: 2 }}>Tracking {selectedBus}</div>
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <XCircle className="w-8 h-8 text-slate-400" />
+                                    <XCircle style={{ width: 28, height: 28, color: '#666666' }} />
                                     <div>
-                                        <div className="text-xl font-bold text-white">GPS Inactive</div>
-                                        <div className="text-sm text-slate-400">Waiting for location...</div>
+                                        <div style={{ fontSize: 17, fontWeight: 700, color: '#ffffff' }}>GPS Inactive</div>
+                                        <div style={{ fontSize: 12, color: '#666666', marginTop: 2 }}>Waiting for location...</div>
                                     </div>
                                 </>
                             )}
                         </div>
                         {tracking && (
-                            <div className="animate-pulse">
-                                <Activity className="w-8 h-8 text-blue-400" />
+                            <div style={{ animation: 'pulse 2s infinite' }}>
+                                <Activity style={{ width: 24, height: 24, color: '#3b82f6' }} />
                             </div>
                         )}
                     </div>
 
                     {/* Error Display */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                            <div className="flex items-center gap-2">
-                                <XCircle className="w-5 h-5 text-red-400" />
-                                <p className="text-red-400 text-sm">{error}</p>
-                            </div>
+                        <div style={{
+                            marginBottom: 20, padding: '12px 14px',
+                            background: 'rgba(239,68,68,0.08)',
+                            border: '1px solid rgba(239,68,68,0.2)',
+                            borderRadius: 8,
+                            display: 'flex', alignItems: 'center', gap: 8,
+                        }}>
+                            <XCircle style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0 }} />
+                            <p style={{ color: '#ef4444', fontSize: 13 }}>{error}</p>
                         </div>
                     )}
 
                     {/* Location Data */}
                     {currentLocation && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-white/5 rounded-lg p-4">
-                                    <div className="text-xs text-slate-400 mb-1">Latitude</div>
-                                    <div className="text-lg font-bold text-white">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                <div style={dataCell}>
+                                    <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Latitude</div>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>
                                         {currentLocation.lat.toFixed(6)}°
                                     </div>
                                 </div>
-                                <div className="bg-white/5 rounded-lg p-4">
-                                    <div className="text-xs text-slate-400 mb-1">Longitude</div>
-                                    <div className="text-lg font-bold text-white">
+                                <div style={dataCell}>
+                                    <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Longitude</div>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>
                                         {currentLocation.lng.toFixed(6)}°
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-white/5 rounded-lg p-4">
-                                    <div className="text-xs text-slate-400 mb-1">Speed</div>
-                                    <div className="text-lg font-bold text-white">
-                                        {currentLocation.speed ?
-                                            `${(currentLocation.speed * 3.6).toFixed(1)} km/h` :
-                                            'Stationary'}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                <div style={dataCell}>
+                                    <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Speed</div>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>
+                                        {currentLocation.speed
+                                            ? `${(currentLocation.speed * 3.6).toFixed(1)} km/h`
+                                            : 'Stationary'}
                                     </div>
                                 </div>
-                                <div className="bg-white/5 rounded-lg p-4">
-                                    <div className="text-xs text-slate-400 mb-1">Heading</div>
-                                    <div className="text-lg font-bold text-white flex items-center gap-2">
+                                <div style={dataCell}>
+                                    <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Heading</div>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 6 }}>
                                         {currentLocation.heading !== null ? (
                                             <>
                                                 <Navigation
-                                                    className="w-4 h-4"
-                                                    style={{ transform: `rotate(${currentLocation.heading}deg)` }}
+                                                    style={{ width: 14, height: 14, transform: `rotate(${currentLocation.heading}deg)`, color: '#3b82f6' }}
                                                 />
                                                 {currentLocation.heading.toFixed(0)}°
                                             </>
-                                        ) : (
-                                            'N/A'
-                                        )}
+                                        ) : 'N/A'}
                                     </div>
                                 </div>
                             </div>
@@ -221,30 +236,35 @@ const DriverTracker = () => {
                 </div>
 
                 {/* Stats Card */}
-                <div className="glass-card rounded-xl p-6">
-                    <div className="grid grid-cols-2 gap-4 text-center">
+                <div style={{ ...card, marginBottom: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, textAlign: 'center' }}>
                         <div>
-                            <div className="text-3xl font-bold text-blue-400 mb-1">
+                            <div style={{ fontSize: 28, fontWeight: 800, color: '#3b82f6', marginBottom: 4, fontFamily: 'JetBrains Mono, monospace' }}>
                                 {updateCount}
                             </div>
-                            <div className="text-xs text-slate-400">Updates Sent</div>
+                            <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Updates Sent</div>
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-emerald-400 mb-1">
+                            <div style={{ fontSize: 18, fontWeight: 700, color: '#10b981', marginBottom: 4, fontFamily: 'JetBrains Mono, monospace' }}>
                                 {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : '--:--:--'}
                             </div>
-                            <div className="text-xs text-slate-400">Last Update</div>
+                            <div style={{ fontSize: 11, color: '#666666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Last Update</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Instructions */}
-                <div className="mt-6 p-6 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                    <div className="flex items-start gap-3">
-                        <Smartphone className="w-5 h-5 text-blue-400 mt-0.5" />
-                        <div className="text-sm text-slate-300">
-                            <p className="font-semibold text-white mb-2">Important:</p>
-                            <ul className="space-y-1 text-slate-400">
+                <div style={{
+                    padding: '16px 20px',
+                    background: 'rgba(59,130,246,0.06)',
+                    border: '1px solid rgba(59,130,246,0.15)',
+                    borderRadius: 12,
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <Smartphone style={{ width: 18, height: 18, color: '#3b82f6', marginTop: 2, flexShrink: 0 }} />
+                        <div>
+                            <p style={{ fontWeight: 700, color: '#ffffff', marginBottom: 8, fontSize: 13 }}>Important:</p>
+                            <ul style={{ color: '#808080', fontSize: 13, lineHeight: 1.8, listStyle: 'none', padding: 0 }}>
                                 <li>• Keep this page open and your phone unlocked</li>
                                 <li>• Ensure location services are enabled</li>
                                 <li>• Keep your phone charged or connected to power</li>
