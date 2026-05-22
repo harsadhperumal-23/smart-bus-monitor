@@ -21,19 +21,21 @@ const Analytics = () => {
     }, []);
 
     return (
-        <div className="h-full overflow-y-auto space-y-6 max-w-[1600px] mx-auto w-full px-2 sm:px-6 pb-8 pt-6" id="main-content">
+        <div className="h-full overflow-y-auto space-y-4 md:space-y-6 max-w-[1600px] mx-auto w-full px-3 sm:px-6 pb-8 pt-4 md:pt-6" id="main-content">
 
             {/* Page header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-white mb-1">Analytics Dashboard</h1>
-                <p style={{ color: '#9CA3AF' }}>Performance insights and trends</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+                <div>
+                    <h1 className="text-xl md:text-2xl font-bold text-white mb-1">Analytics Dashboard</h1>
+                    <p style={{ color: '#9CA3AF' }} className="text-sm">Performance insights and trends</p>
+                </div>
             </div>
 
             {/* AI Insights */}
             <AIInsightsPanel title="AI-Generated Insights" refreshMs={5000} />
 
-            {/* Charts — 2 column on large screens */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Charts — 1 col mobile, 2 col large screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 
                 {/* On-Time Performance */}
                 <div className="card">

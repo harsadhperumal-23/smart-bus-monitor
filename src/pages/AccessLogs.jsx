@@ -100,22 +100,23 @@ const AccessLogs = () => {
     }
 
     return (
-        <div className="h-full overflow-y-auto space-y-6 max-w-[1600px] mx-auto w-full px-2 sm:px-6 pb-8 pt-6" id="main-content">
+        <div className="h-full overflow-y-auto space-y-4 md:space-y-6 max-w-[1600px] mx-auto w-full px-3 sm:px-6 pb-8 pt-4 md:pt-6" id="main-content">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                <h1 className="text-2xl font-bold text-white mb-1">Access Logs</h1>
-                <p style={{ color: '#9CA3AF' }}>Monitor all system access and user activities</p>
-            </div>
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleExport}
-                className="btn-secondary flex items-center gap-2"
-            >
-                <Download className="w-4 h-4" />
-                Export CSV
-            </motion.button>
+                    <h1 className="text-xl md:text-2xl font-bold text-white mb-1">Access Logs</h1>
+                    <p style={{ color: '#9CA3AF' }} className="text-sm">Monitor all system access and user activities</p>
+                </div>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleExport}
+                    className="btn-secondary flex items-center gap-2 self-start sm:self-auto"
+                    style={{ minHeight: 44 }}
+                >
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                </motion.button>
             </div>
 
             {stats && (

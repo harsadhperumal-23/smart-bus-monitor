@@ -309,3 +309,61 @@ select.input option {
 
 /* ── Table dark overrides ───────────────────────────────────────────────────── */
 thead, thead tr, thead th { background-color: #1a1a1a !important; }
+
+/* ── Mobile Responsiveness ──────────────────────────────────────────────────── */
+
+/* KPI Strip: 4-col desktop → 2×2 on mobile */
+.kpi-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+/* All KPI cards get right border except last in row */
+.kpi-card { border-right: 1px solid #404040; border-bottom: 1px solid #404040; }
+.kpi-card-3 { border-right: none; }
+
+@media (max-width: 767px) {
+  .kpi-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* On 2x2: remove right border on cards 1 and 3 (0-indexed) */
+  .kpi-card-1 { border-right: none; }
+  .kpi-card-3 { border-right: none; border-bottom: none; }
+  .kpi-card-2 { border-bottom: none; }
+}
+
+/* GPS Coordinates grid: 2-col, collapses to 1-col on very small screens */
+.gps-coord-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 360px) {
+  .gps-coord-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Minimum touch target size: 44×44px */
+button, a, select, input[type="checkbox"], input[type="radio"] {
+  min-height: 44px;
+}
+.nav-link, .mobile-nav-link {
+  min-height: 44px;
+}
+
+/* Page container padding on mobile */
+.page-container {
+  padding: 16px;
+}
+@media (min-width: 640px) {
+  .page-container {
+    padding: 24px;
+  }
+}
+
+/* Operations map minimum height on mobile so it's visible */
+@media (max-width: 767px) {
+  #operations-map-panel {
+    min-height: 320px;
+  }
+}

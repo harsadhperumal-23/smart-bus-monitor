@@ -131,10 +131,8 @@ const KpiStrip = () => {
     return (
         <div
             id="kpi-strip"
+            className="kpi-strip-grid"
             style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: 0,
                 background: '#202020',
                 borderBottom: '1px solid #404040',
             }}
@@ -158,10 +156,10 @@ const KpiStrip = () => {
                             delay: i * 0.07,
                             duration: 0.25,
                         }}
+                        className={`kpi-card kpi-card-${i}`}
                         style={{
                             padding: '13px 18px',
                             background: '#202020',
-                            borderRight: i < CARDS.length - 1 ? '1px solid #404040' : 'none',
                             cursor: 'default',
                             position: 'relative',
                             transition: 'background 0.15s ease',

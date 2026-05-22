@@ -2,8 +2,10 @@ from flask import Flask, jsonify
 import serial
 import time
 import threading
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 COM_PORT = "COM13"
 BAUD_RATE = 115200

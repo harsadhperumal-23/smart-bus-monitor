@@ -29,18 +29,18 @@ const Performance = () => {
     ];
 
     return (
-        <div className="h-full overflow-y-auto pt-6 space-y-6">
+        <div className="h-full overflow-y-auto pt-4 md:pt-6 space-y-4 md:space-y-6 px-3 sm:px-6 pb-8">
 
             {/* Page header */}
             <div>
-                <h1 className="text-2xl font-bold text-white mb-1">Performance Metrics</h1>
-                <p style={{ color: '#9CA3AF' }}>Track fleet performance and efficiency</p>
+                <h1 className="text-xl md:text-2xl font-bold text-white mb-1">Performance Metrics</h1>
+                <p style={{ color: '#9CA3AF' }} className="text-sm">Track fleet performance and efficiency</p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Stats Grid — 1 col mobile, 2 col md, 4 col lg */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 {stats.map((stat, index) => (
-                    <div key={index} className="card flex items-center gap-4">
+                    <div key={index} className="card flex items-center gap-4" style={{ minHeight: 72 }}>
                         <div className={`w-12 h-12 ${stat.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
                             <stat.icon className={`w-6 h-6 ${stat.color}`} />
                         </div>
@@ -52,12 +52,12 @@ const Performance = () => {
                 ))}
             </div>
 
-            {/* Performance Chart */}
-            <div className="card">
+            {/* Performance Chart — full width */}
+            <div className="card w-full">
                 <h2 className="text-base font-semibold text-white mb-5">
                     Daily Performance Trend
                 </h2>
-                <ResponsiveContainer width="100%" height={360}>
+                <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={performanceData}>
                         <defs>
                             <linearGradient id="onTime" x1="0" y1="0" x2="0" y2="1">
@@ -70,10 +70,10 @@ const Performance = () => {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-                        <XAxis dataKey="time"  stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-                        <YAxis                 stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                        <XAxis dataKey="time"  stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} />
+                        <YAxis                 stroke="#6B7280" tick={{ fill: '#9CA3AF', fontSize: 11 }} width={32} />
                         <Tooltip {...TOOLTIP_STYLE} />
-                        <Legend wrapperStyle={{ color: '#9CA3AF' }} />
+                        <Legend wrapperStyle={{ color: '#9CA3AF', fontSize: 13 }} />
                         <Area type="monotone" dataKey="onTime"  stroke="#6366F1" strokeWidth={2} fillOpacity={1} fill="url(#onTime)" />
                         <Area type="monotone" dataKey="delayed" stroke="#22C55E" strokeWidth={2} fillOpacity={1} fill="url(#delayed)" />
                     </AreaChart>

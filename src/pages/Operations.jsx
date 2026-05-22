@@ -177,10 +177,10 @@ const Operations = React.memo(() => {
     ];
 
     return (
-        <div className="flex h-full w-full bg-[#161616] text-white overflow-hidden">
+        <div className="flex flex-col md:flex-row h-full w-full bg-[#161616] text-white overflow-auto md:overflow-hidden">
             
             {/* ── LEFT PANEL: TRIP INFO ──────────────────────────────── */}
-            <div className="w-80 flex-shrink-0 border-r border-[#404040] bg-[#202020] flex flex-col z-10 hidden md:flex">
+            <div className="w-full md:w-80 flex-shrink-0 border-b md:border-b-0 md:border-r border-[#404040] bg-[#202020] flex flex-col z-10 hidden md:flex">
                 <div className="p-5 border-b border-[#404040]">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-sm font-bold tracking-widest text-gray-400 uppercase">Trip Monitor</h2>
@@ -248,7 +248,7 @@ const Operations = React.memo(() => {
             </div>
 
             {/* ── CENTER PANEL: FULL MAP ─────────────────────────────── */}
-            <div className="flex-1 relative bg-[#0A0A0A] flex flex-col">
+            <div className="flex-1 relative bg-[#0A0A0A] flex flex-col" style={{ minHeight: '55vw' }}>
                 <div className="absolute inset-0 z-0">
                     <BusMap
                         buses={allBuses}
@@ -282,7 +282,7 @@ const Operations = React.memo(() => {
             </div>
 
             {/* ── RIGHT PANEL: SUMMARY & METRICS ─────────────────────── */}
-            <div className="w-80 flex-shrink-0 border-l border-[#404040] bg-[#202020] flex flex-col z-10 hidden xl:flex">
+            <div className="w-full md:w-80 xl:flex flex-shrink-0 border-t md:border-t-0 md:border-l border-[#404040] bg-[#202020] flex-col z-10 hidden xl:flex">
                 <div className="p-5 border-b border-[#404040]">
                     <h2 className="text-sm font-bold tracking-widest text-gray-400 uppercase mb-4">Live Telemetry</h2>
                     <div className="grid grid-cols-2 gap-3">
@@ -399,13 +399,13 @@ const Operations = React.memo(() => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 bg-[#161616]/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
+                        className="fixed inset-0 z-50 bg-[#161616]/90 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 md:p-8"
                     >
                         <motion.div 
                             initial={{ scale: 0.95, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.95, y: 20 }}
-                            className="bg-[#202020] border border-[#404040] rounded-2xl w-full max-w-4xl max-h-full overflow-y-auto flex flex-col shadow-2xl"
+                            className="bg-[#202020] border-0 sm:border border-[#404040] rounded-none sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl"
                         >
                             <div className="sticky top-0 bg-[#202020] border-b border-[#404040] p-4 flex items-center justify-between z-10">
                                 <h2 className="text-lg font-bold text-white flex items-center gap-2">

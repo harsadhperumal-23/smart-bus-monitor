@@ -92,7 +92,7 @@ const DriverTracker = () => {
     };
 
     return (
-        <div style={{ minHeight: '100%', background: '#161616', padding: 24, overflowY: 'auto' }}>
+        <div style={{ minHeight: '100%', background: '#161616', padding: '16px', overflowY: 'auto' }} className="md:p-6">
             <div style={{ maxWidth: 640, margin: '0 auto' }}>
 
                 {/* Header */}
@@ -194,21 +194,22 @@ const DriverTracker = () => {
                     {/* Location Data */}
                     {currentLocation && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            {/* Lat/Lng — stacks to single column on very small screens */}
+                            <div className="gps-coord-grid">
                                 <div style={dataCell}>
                                     <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Latitude</div>
-                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all' }}>
                                         {currentLocation.lat.toFixed(6)}°
                                     </div>
                                 </div>
                                 <div style={dataCell}>
                                     <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Longitude</div>
-                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', fontFamily: 'JetBrains Mono, monospace', wordBreak: 'break-all' }}>
                                         {currentLocation.lng.toFixed(6)}°
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            <div className="gps-coord-grid">
                                 <div style={dataCell}>
                                     <div style={{ fontSize: 10, color: '#666666', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Speed</div>
                                     <div style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>
