@@ -367,3 +367,16 @@ button, a, select, input[type="checkbox"], input[type="radio"] {
     min-height: 320px;
   }
 }
+
+/* Operations map height on mobile */
+@media (max-width: 767px) {
+  .operations-map { min-height: 280px !important; height: 280px !important; }
+}
+
+/* Prevent horizontal overflow on all pages */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+/* Mobile page container */
+@media (max-width: 640px) {
+  .page-container { padding: 12px !important; }
+}
