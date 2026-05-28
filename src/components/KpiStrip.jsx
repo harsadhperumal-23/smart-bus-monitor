@@ -157,8 +157,8 @@ const KpiStrip = () => {
                             duration: 0.25,
                         }}
                         className={`kpi-card kpi-card-${i}`}
+                        className={`kpi-card kpi-card-${i} p-3.5 sm:p-4`}
                         style={{
-                            padding: '13px 18px',
                             background: '#202020',
                             cursor: 'default',
                             position: 'relative',
@@ -167,42 +167,43 @@ const KpiStrip = () => {
                         whileHover={{ background: '#252525' }}
                     >
                         {/* Top row: icon bubble + label */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 mb-2.5">
+                            <div className="flex items-center gap-2">
                                 <div style={{
-                                    width: 28, height: 28, borderRadius: 7,
+                                    width: 24, height: 24, borderRadius: 6,
                                     background: card.accentLight,
                                     border: `1px solid ${card.accentBorder}`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     flexShrink: 0,
-                                }}>
-                                    <Icon size={13} color={card.accentIcon} strokeWidth={2.2} />
+                                }}
+                                className="w-6 h-6 sm:w-7 sm:h-7"
+                                >
+                                    <Icon size={12} color={card.accentIcon} strokeWidth={2.2} className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                 </div>
-                                <span style={{
-                                    fontSize: 10, fontWeight: 700, color: '#666666',
-                                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                                    fontFamily: 'Inter, sans-serif',
-                                }}>
+                                <span className="text-[9.5px] sm:text-xs font-extrabold text-gray-500 tracking-wider uppercase">
                                     {card.label}
                                 </span>
                             </div>
 
                             {/* Trend chip */}
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 3,
-                                padding: '2px 6px', borderRadius: 5,
-                                background: trend === 'up'
-                                    ? 'rgba(16,185,129,0.1)'
-                                    : trend === 'down'
-                                        ? 'rgba(239,68,68,0.1)'
-                                        : 'rgba(102,102,102,0.1)',
-                            }}>
+                            <div 
+                                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold w-fit"
+                                style={{
+                                    background: trend === 'up'
+                                        ? 'rgba(16,185,129,0.1)'
+                                        : trend === 'down'
+                                            ? 'rgba(239,68,68,0.1)'
+                                            : 'rgba(102,102,102,0.1)',
+                                }}
+                            >
                                 <TrendIcon trend={trend} />
-                                <span style={{
-                                    fontSize: 9.5, fontWeight: 600,
-                                    color: trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : '#666666',
-                                    whiteSpace: 'nowrap',
-                                }}>
+                                <span 
+                                    className="hidden sm:inline"
+                                    style={{
+                                        color: trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : '#666666',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
                                     {trendLabel}
                                 </span>
                             </div>
