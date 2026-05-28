@@ -355,6 +355,12 @@ button, a, select, input[type="checkbox"], input[type="radio"] {
 .page-container {
   padding: 16px;
 }
+@media (max-width: 767px) {
+  .page-container {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+}
 @media (min-width: 640px) {
   .page-container {
     padding: 24px;
