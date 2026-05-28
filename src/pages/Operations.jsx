@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     Users, Armchair, AlertTriangle, UserCheck, MapPin, Navigation, 
-    Clock, CheckCircle, Bus, Map as MapIcon, Plus, Info, Zap, Activity
+    Clock, CheckCircle, Bus, Map as MapIcon, Plus, Info, Zap, Activity, Bell
 } from 'lucide-react';
 import BusMap from '../components/BusMap';
 import BusSidePanel from '../components/BusSidePanel';
@@ -27,6 +27,18 @@ const Operations = React.memo(() => {
     const [isLiveTracking, setIsLiveTracking] = useState(true);
     const [isPublicLinkEnabled, setIsPublicLinkEnabled] = useState(false);
     const [showSeatMap, setShowSeatMap] = useState(false);
+
+    // Responsive Mobile layout states
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [activeMobileTab, setActiveMobileTab] = useState('map');
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // ── Multi-bus fleet state ────────────────────────────────────────────────
     const [allBuses, setAllBuses] = useState(MULTI_BUS_DATA);
@@ -175,6 +187,225 @@ const Operations = React.memo(() => {
         { name: 'North Terminal', time: '11:30 AM', passed: false, current: true },
         { name: 'Airport', time: '12:15 PM', passed: false },
     ];
+
+    if (isMobile) {
+        return (
+            <div className="flex flex-col h-full w-full bg-[#161616] text-white overflow-hidden pb-16">
+                {/* Mobile Sub-Header: Active Bus Selector & Mode Toggle */}
+                <div className="flex-shrink-0 bg-[#202020] border-b border-[#404040] p-4 flex items-center justify-between gap-3 z-10">
+                    <div className="flex-1 min-w-0">
+                        <select
+                            value={selectedBus}
+                            onChange={(e) => setSelectedBus(e.target.value)}
+                            className="w-full bg-[#161616] border border-[#404040] rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#3b82f6]"
+                        >
+                            {availableBuses.map(bus => (
+                                <option key={bus} value={bus}>{bus}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        onClick={() => setIsDemoMode(!isDemoMode)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${isDemoMode ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400' : 'bg-[#161616] border-[#404040] text-gray-300'}`}
+                    >
+                        <Zap className={`w-3.5 h-3.5 ${isDemoMode ? 'animate-pulse' : ''}`} />
+                        {isDemoMode ? 'Sim' : 'Live'}
+                    </button>
+
+                    <span className={`flex items-center gap-1 px-2.5 py-1 rounded text-[9px] font-bold tracking-wider ${isLiveTracking ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#EF4444]/10 text-[#EF4444]'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isLiveTracking ? 'bg-[#22C55E] animate-pulse' : 'bg-[#EF4444]'}`}></span>
+                        {isLiveTracking ? 'LIVE' : 'PAUSED'}
+                    </span>
+                </div>
+
+                {/* Active Tab Content Area - Scrollable */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-none pb-20">
+                    {activeMobileTab === 'map' && (
+                        <div className="relative bg-[#0A0A0A] rounded-2xl overflow-hidden border border-[#404040] shadow-xl" style={{ height: 'calc(100vh - 250px)', minHeight: '350px' }}>
+                            <BusMap
+                                buses={allBuses}
+                                onBusSelect={setSelectedMapBus}
+                                selectedBusId={selectedMapBus?.busId || null}
+                                currentPosition={busData?.gpsLocation ? [busData.gpsLocation.lat, busData.gpsLocation.lng] : null}
+                                busData={busData}
+                            />
+                            {/* Floating Map Info Overlay */}
+                            <div className="absolute bottom-3 left-3 right-3 z-[1000] bg-[#202020]/90 backdrop-blur-md border border-[#404040] p-3 rounded-xl shadow-xl flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Active Vehicle</p>
+                                    <p className="text-sm font-black text-white">{selectedBus}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Occupancy</p>
+                                    <p className="text-xs font-bold text-indigo-400">{metrics.totalPassengers} / 40 ({metrics.utilization}%)</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeMobileTab === 'seats' && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-[#202020] border border-[#404040] rounded-2xl overflow-hidden p-2 shadow-xl"
+                        >
+                            <SeatGrid seats={seats} />
+                        </motion.div>
+                    )}
+
+                    {activeMobileTab === 'alerts' && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-4 pb-4"
+                        >
+                            {/* Live Sensor Card */}
+                            <div className="bg-[#202020] text-white p-5 rounded-2xl border border-[#404040] relative overflow-hidden shadow-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                        <Activity className="w-5 h-5 text-indigo-400" />
+                                        Door Sensor (IoT)
+                                    </h3>
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">VL53L0X ToF</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mt-4">
+                                    <div className="bg-[#161616] p-3 rounded-xl border border-[#303030]">
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Distance</p>
+                                        <p className="text-lg font-mono font-bold text-white mt-1">{sensorData.distance} cm</p>
+                                    </div>
+                                    <div className="bg-[#161616] p-3 rounded-xl border border-[#303030]">
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Detection Status</p>
+                                        <p className={`text-base font-bold mt-1 ${sensorData.status === 'OCCUPIED' ? 'text-[#22C55E]' : 'text-gray-400'}`}>
+                                            {sensorData.status}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Core Telemetry Cards */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-[#202020] border border-[#404040] rounded-2xl p-4 shadow-xl">
+                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">ETA Next Stop</p>
+                                    <p className="text-xl font-mono font-bold text-indigo-400">14:00</p>
+                                    <p className="text-[10px] text-gray-400 mt-1">Mins remaining</p>
+                                </div>
+                                <div className="bg-[#202020] border border-[#404040] rounded-2xl p-4 shadow-xl">
+                                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Schedule</p>
+                                    <p className="text-lg font-bold text-[#22C55E]">On Time</p>
+                                    <p className="text-[10px] text-gray-400 mt-1">+2m buffer</p>
+                                </div>
+                            </div>
+
+                            {/* Smart Alerts Feed */}
+                            <div className="bg-[#202020] border border-[#404040] rounded-2xl p-4 space-y-4 shadow-xl">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-orange-400" />
+                                    AI Smart Alerts
+                                </h3>
+                                <SmartAlerts maxHeight="350px" />
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeMobileTab === 'route' && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-4 pb-4"
+                        >
+                            {/* Route details */}
+                            <div className="bg-[#202020] border border-[#404040] rounded-2xl p-4 space-y-4 shadow-xl">
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    <Navigation className="w-4 h-4 text-indigo-400" />
+                                    <h3 className="text-xs font-bold uppercase tracking-widest">Current Route Details</h3>
+                                </div>
+                                <div className="bg-[#161616] border border-[#303030] rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-bold text-sm">Downtown Express</span>
+                                        <span className="text-xs px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded-lg font-bold">R-42</span>
+                                    </div>
+                                    <div className="relative pl-4 mt-4 space-y-4">
+                                        <div className="absolute left-1.5 top-2 bottom-2 w-px bg-[#1F2937]"></div>
+                                        {stops.map((stop, i) => (
+                                            <div key={i} className="relative text-xs">
+                                                <div className={`absolute -left-[21px] top-1 w-2 h-2 rounded-full border-2 ${stop.passed ? 'bg-indigo-500 border-indigo-500' : stop.current ? 'bg-[#0A0A0A] border-indigo-500 animate-pulse' : 'bg-[#0A0A0A] border-[#1F2937]'}`}></div>
+                                                <div className="flex justify-between items-start">
+                                                    <p className={`font-medium ${stop.passed ? 'text-gray-400' : stop.current ? 'text-white font-bold' : 'text-gray-500'}`}>{stop.name}</p>
+                                                    <p className={`font-mono text-[9px] ${stop.passed ? 'text-gray-500' : 'text-indigo-400'}`}>{stop.time}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Driver activity */}
+                            <DriverActivityCard />
+
+                            {/* Settings / Controls */}
+                            <div className="bg-[#202020] border border-[#404040] rounded-2xl p-4 space-y-4 shadow-xl">
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Operations Control</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-bold">Live Polling</p>
+                                            <p className="text-[10px] text-gray-500">Update GPS every 3s</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => setIsLiveTracking(!isLiveTracking)}
+                                            className={`w-12 h-6 rounded-full transition-colors relative ${isLiveTracking ? 'bg-[#3b82f6]' : 'bg-[#333333]'}`}
+                                        >
+                                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isLiveTracking ? 'left-7' : 'left-1'}`}></span>
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-bold">Public Tracking</p>
+                                            <p className="text-[10px] text-gray-500">Share location link</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => setIsPublicLinkEnabled(!isPublicLinkEnabled)}
+                                            className={`w-12 h-6 rounded-full transition-colors relative ${isPublicLinkEnabled ? 'bg-[#3b82f6]' : 'bg-[#333333]'}`}
+                                        >
+                                            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isPublicLinkEnabled ? 'left-7' : 'left-1'}`}></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Mobile Bottom Tab Bar */}
+                <div className="flex-shrink-0 bg-[#202020] border-t border-[#404040] fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around z-[9999] shadow-2xl px-2">
+                    {[
+                        { id: 'map', icon: MapIcon, label: 'GPS Map' },
+                        { id: 'seats', icon: Armchair, label: 'Seats' },
+                        { id: 'alerts', icon: Bell, label: 'Alerts' },
+                        { id: 'route', icon: Navigation, label: 'Trip/Route' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveMobileTab(tab.id)}
+                            className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-all ${activeMobileTab === tab.id ? 'text-[#3b82f6]' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            <tab.icon className={`w-5 h-5 mb-1 ${activeMobileTab === tab.id ? 'scale-110' : ''}`} />
+                            <span className="text-[9px] font-bold uppercase tracking-wider">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Slides in panel details if clicked on map */}
+                <BusSidePanel
+                    bus={selectedMapBus}
+                    onClose={() => setSelectedMapBus(null)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col md:flex-row h-full w-full bg-[#161616] text-white overflow-auto md:overflow-hidden">
