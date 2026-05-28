@@ -131,26 +131,30 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
         const startSeat = rowIndex * seatsPerRow + 1;
 
         return (
-            <div key={rowIndex} className="grid grid-cols-9 gap-3 items-center mb-3">
+            <div key={rowIndex} className="grid grid-cols-5 sm:grid-cols-9 gap-1.5 sm:gap-3 items-center mb-2 sm:mb-3 relative">
                 {/* Left side - 2 seats */}
-                <div className="col-span-2 grid grid-cols-2 gap-3">
+                <div className="col-span-2 grid grid-cols-2 gap-1.5 sm:gap-3">
                     {renderSeat(startSeat)}
                     {renderSeat(startSeat + 1)}
                 </div>
 
                 {/* Aisle */}
-                <div className="col-span-1 flex items-center justify-center h-full">
-                    <div className="h-full w-1 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 rounded-full opacity-50" />
+                <div className="col-span-1 flex flex-col items-center justify-center h-full min-h-[40px] relative">
+                    <div className="h-full w-0.5 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 rounded-full opacity-30 absolute" />
+                    {/* Compact row label for mobile, centered in aisle */}
+                    <div className="z-10 bg-[#161616] px-1.5 py-0.5 rounded border border-slate-800 sm:hidden">
+                        <span className="text-[8px] text-slate-400 font-extrabold tracking-tight">R{rowIndex + 1}</span>
+                    </div>
                 </div>
 
                 {/* Right side - 2 seats */}
-                <div className="col-span-2 grid grid-cols-2 gap-3">
+                <div className="col-span-2 grid grid-cols-2 gap-1.5 sm:gap-3">
                     {renderSeat(startSeat + 2)}
                     {renderSeat(startSeat + 3)}
                 </div>
 
-                {/* Row label */}
-                <div className="col-span-4 text-right">
+                {/* Row label - desktop only */}
+                <div className="col-span-4 text-right hidden sm:block">
                     <div className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-800 text-[10px] text-slate-400 font-bold tracking-wider uppercase border border-slate-700">
                         Row {rowIndex + 1}
                     </div>
@@ -165,33 +169,33 @@ const SeatGrid = ({ seats = [], onSeatClick }) => {
             role="region"
             aria-label="Bus seat occupancy grid"
         >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 p-6 border-b border-[#1F2937] bg-[#0A0A0A]">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 sm:mb-8 p-4 sm:p-6 border-b border-[#1F2937] bg-[#0A0A0A]">
                 <div>
-                    <h3 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
                         Real-Time Mapping
                         <span className="relative flex h-3 w-3">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                     </h3>
-                    <p className="text-sm text-slate-400 mt-1 font-medium">
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
                         Live monitoring with 3-state AI computer vision
                     </p>
                 </div>
 
                 {/* Legend */}
-                <div className="flex flex-wrap items-center gap-6 mt-4 sm:mt-0 text-sm font-bold bg-slate-950/50 px-4 py-2 rounded-lg border border-slate-800">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                        <span className="text-lg leading-none">🟩</span>
-                        <span className="uppercase tracking-widest">Occupied</span>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 lg:mt-0 text-xs sm:text-sm font-bold bg-slate-950/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-slate-800">
+                    <div className="flex items-center gap-1.5 text-emerald-400">
+                        <span className="text-base sm:text-lg leading-none">🟩</span>
+                        <span className="uppercase tracking-widest text-[10px] sm:text-xs">Occupied</span>
                     </div>
-                    <div className="flex items-center gap-2 text-red-500">
-                        <span className="text-lg leading-none animate-pulse">🟧</span>
-                        <span className="uppercase tracking-widest animate-pulse">Luggage</span>
+                    <div className="flex items-center gap-1.5 text-red-500">
+                        <span className="text-base sm:text-lg leading-none animate-pulse">🟧</span>
+                        <span className="uppercase tracking-widest text-[10px] sm:text-xs animate-pulse">Luggage</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400">
-                        <span className="text-lg leading-none">⬜</span>
-                        <span className="uppercase tracking-widest">Empty</span>
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                        <span className="text-base sm:text-lg leading-none">⬜</span>
+                        <span className="uppercase tracking-widest text-[10px] sm:text-xs">Empty</span>
                     </div>
                 </div>
             </div>
