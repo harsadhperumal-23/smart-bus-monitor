@@ -1,17 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import KpiStrip from "./KpiStrip";
 
 export default function Layout() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div
       id="app-layout"
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
+        height: isMobile ? 'auto' : '100vh',
+        minHeight: isMobile ? '100vh' : 'auto',
+        overflow: isMobile ? 'visible' : 'hidden',
         background: '#161616',
         color: '#ffffff',
         fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
@@ -38,7 +49,7 @@ export default function Layout() {
           display: 'flex',
           flexDirection: 'column',
           minHeight: 0,
-          overflow: 'hidden',
+          overflow: isMobile ? 'visible' : 'hidden',
           background: '#161616',
         }}
       >
